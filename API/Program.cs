@@ -1,5 +1,7 @@
+using API.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,19 +9,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
-builder.Services.AddDbContext<DataContext>(opt=> 
-{
-    opt.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
-});
 
-builder.Services.AddCors(opt=>{
-    opt.AddPolicy("CorsPolicy",policy=>
-    {
-        policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:3000");
-    });
+//This is an extension method which adds all the required services in one fell swoop, instead of adding them one by one here in the Program class
+builder.Services.AddApplicationServices(builder.Configuration);
 
-});
 
 var app = builder.Build();
 
