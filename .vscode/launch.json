@@ -1,6 +1,7 @@
 {
     "version": "0.2.0",
     "configurations": [
+        
         {
             // Use IntelliSense to find out which attributes exist for C# debugging
             // Use hover for the description of the existing attributes
@@ -26,7 +27,7 @@
                 "/Views": "${workspaceFolder}/Views"
             }
         },
-        {
+        {   //This profile is used to debug anything except the startup, which is debugged at .NET Core Launch
             "name": ".NET Core Attach",
             "type": "coreclr",
             "request": "attach"
