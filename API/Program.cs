@@ -36,6 +36,8 @@ try
 {
     //This is equivalent to running the ef migrate command via CLI
     var context=services.GetRequiredService<DataContext>();
+    // Drop the database
+    await context.Database.EnsureDeletedAsync();
     //Since SeedData is asynchronous, Migrate must be called using await+Async version
     await context.Database.MigrateAsync();
     //SeedData is an asynchronous Task, so it needs await before calling it

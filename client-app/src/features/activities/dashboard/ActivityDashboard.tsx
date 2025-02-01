@@ -1,52 +1,39 @@
 import React from 'react';
 import { Grid} from 'semantic-ui-react';
-import { Activity } from '../../../app/layout/models/activity';
 import ActivityList from './ActivityList';
 import ActivityDetails from '../details/ActivityDetails';
 import ActivityForm from '../form/ActivityForm';
+import { useStore } from '../../../app/stores/store';
+import { observer } from 'mobx-react-lite';
 
-interface Props{
-    activities: Activity[];
-    selectedActivity: Activity|undefined;
-    selectActivity:(id:string)=>void;
-    cancelSelectActivity:()=>void;
-    editMode:boolean;
-    openForm:(id:string)=>void;
-    closeForm:()=>void;
-    createOrEdit:(activity:Activity)=>void;
-    deleteActivity:(id:string)=>void;
-    submitting:boolean;
-}
 
-export default function ActivityDashboard({activities,selectedActivity,selectActivity,cancelSelectActivity,
-    editMode,openForm,closeForm, createOrEdit,deleteActivity, submitting}:Props)
+
+//Remember to change the export default to use observer so App.tsx sees the property and displays the dashboard.
+export default observer(function ActivityDashboard()
 {
+    /*Remember that the destructuring syntax below is a shorter way of achieving this:
+        const store = useStore();
+        const activityStore = store.activityStore;*/
+    const{activityStore}=useStore();
+    const{selectedActivity,editMode}=activityStore;
+
     return(
         <Grid>
             <Grid.Column width='10'>
-            <ActivityList activities={activities} 
-                selectActivity={selectActivity} 
-                deleteActivity={deleteActivity}
-                submitting={submitting}
+            <ActivityList 
                 />
             </Grid.Column>
             <Grid.Column width={'6'}>
                 {/*The syntax && makes the code after && execute only if activities[0] isn't null, preventing the app from crashing because the ActivityDetails component loads before
                 the application has access to the activity object, this makes it wait until the object loads */}
                 {selectedActivity && !editMode &&
-                <ActivityDetails 
-                    activity={selectedActivity} 
-                    cancelSelectActivity={cancelSelectActivity}
-                    openForm={openForm}
+                <ActivityDetails                         
                 />}
                 {editMode&&
-                <ActivityForm closeForm={closeForm} 
-                activity={selectedActivity} 
-                createOrEdit={createOrEdit} 
-                submitting={submitting}
+                <ActivityForm         
                 />}
             </Grid.Column>
            
         </Grid>
     )
-}
+})

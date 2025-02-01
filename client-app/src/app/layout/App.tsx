@@ -1,104 +1,37 @@
 
-import { useEffect, useState } from 'react'
-
+import { useEffect} from 'react'
 import { Container} from 'semantic-ui-react';
-import { Activity } from './models/activity';
 import NavBar from './NavBar';
 import ActivityDashboard from '../../features/activities/dashboard/ActivityDashboard';
-import{v4 as uuid} from 'uuid';
-import agent from '../api/agent';
 import LoadingComponent from './LoadingComponents';
+import { useStore } from '../stores/store';
+import { observer } from 'mobx-react-lite';
 
 
 function App() {
-  const [activities,setActivities]=useState<Activity[]>([]);
-  const [selectedActivity,setSelectedActivity]=useState<Activity|undefined>(undefined);
-  const [editMode,setEditMode]=useState(false);
-  const [loading,setLoading]=useState(true)
-  const [submitting,setSubmitting]=useState(false);
+  const {activityStore}=useStore();
+
  
 
   useEffect(()=>{
-   agent.Activities.list().then(response=>{
-    let activities:Activity[]=[];
-    response.forEach(activity=>{
-      activity.date=activity.date.split('T')[0];
-    activities.push(activity);
-   })
-    setActivities(response);
-    setLoading(false);
-   })
-  },[])
+   activityStore.loadActivities();
+  },[activityStore])
+  //The array after the comma is called dependency array, putting something inside of it means that the hook will rerun the code only when that dependency changes,
+  //this prevent unnecessary reruns or rerenders, if dependencies are empty,the hook will run only when the component is mounted
   
-  function handleSelectActivity(id:string){
-    setSelectedActivity(activities.find(x=>x.id===id));
-  }
-
-  function handleCancelSelectActivity()
-  {
-    setSelectedActivity(undefined);
-  }
-
-  function handleDeleteActivity(id:string){
-    setSubmitting(true);
-    agent.Activities.delete(id).then(()=>{
-      setActivities([...activities.filter(x=>x.id!==id)]);
-      setSubmitting(false);
-    })
-
-  }
-
-  {/*id?:string means the parameter is optional, and id? in the ternary operator means id!=undefined */}
-  function handleFormOpen(id?:string){
-    id? handleSelectActivity(id):handleCancelSelectActivity();
-    setEditMode(true);
-  }
-
-  function handleFormClose(){
-    setEditMode(false);
-  }
-
-  function handleCreateOrEditActivity(activity:Activity){
-    setSubmitting(true);
-    if(activity.id){
-      agent.Activities.update(activity).then(()=>{ setActivities([...activities.filter(x=>x.id!==activity.id),activity])
-      setSelectedActivity(activity);
-      setEditMode(false);
-      setSubmitting(false);
-    })
-  }else{
-    activity.id=uuid();
-    agent.Activities.create(activity).then(()=>{
-      setActivities([...activities,activity])
-      setSelectedActivity(activity);
-      setEditMode(false);
-      setSubmitting(false);
-    })
-  }
-}
 
 
-  if(loading) return <LoadingComponent content='App is make loadings'/>
+  if(activityStore.loadingInitial) return <LoadingComponent content='App is make loadings'/>
   //A function can only return ONE element, so the header must be inside the div,we can't return both a header and a div
   //To avoid returning an empty div, we enclose everything that will be returned inside empty tags
   return (
     <>
-      <NavBar openForm={handleFormOpen}/>
+      <NavBar />
       <Container style={{marginTop:'7em'}}>
-        <ActivityDashboard activities={activities}
-        selectedActivity={selectedActivity}
-        selectActivity={handleSelectActivity}
-        cancelSelectActivity={handleCancelSelectActivity}
-        editMode={editMode}
-        openForm={handleFormOpen}
-        closeForm={handleFormClose}
-        createOrEdit={handleCreateOrEditActivity}
-        deleteActivity={handleDeleteActivity}
-        submitting={submitting}
-        />
+        <ActivityDashboard  />
       </Container>
     </>
-  )
+  );
 }
-
-export default App
+/*We need to pass the function to the observer function here so that it registers the changes to observable properties when MobX actions alter them */
+export default observer(App);
