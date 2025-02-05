@@ -1,21 +1,35 @@
-import React from 'react';
+import { useEffect } from 'react';
 import { Grid} from 'semantic-ui-react';
 import ActivityList from './ActivityList';
-import ActivityDetails from '../details/ActivityDetails';
-import ActivityForm from '../form/ActivityForm';
 import { useStore } from '../../../app/stores/store';
 import { observer } from 'mobx-react-lite';
+import LoadingComponent from '../../../app/layout/LoadingComponents';
 
 
 
 //Remember to change the export default to use observer so App.tsx sees the property and displays the dashboard.
 export default observer(function ActivityDashboard()
-{
+{  
+    const{activityStore}=useStore();
+    const{activityRegistry}=activityStore;
+
+   
+
+    useEffect(()=>{
+     if(activityRegistry.size<=1)activityStore.loadActivities();
+    },[activityStore,activityRegistry.size])
+    //The array after the comma is called dependency array, putting something inside of it means that the hook will rerun the code only when that dependency changes,
+    //this prevent unnecessary reruns or rerenders, if dependencies are empty,the hook will run only when the component is mounted
+    
+  
+  
+    if(activityStore.loadingInitial) return <LoadingComponent content='App is make loadings'/>
+    //A function can only return ONE element, so the header must be inside the div,we can't return both a header and a div
+    //To avoid returning an empty div, we enclose everything that will be returned inside empty tags
     /*Remember that the destructuring syntax below is a shorter way of achieving this:
         const store = useStore();
         const activityStore = store.activityStore;*/
-    const{activityStore}=useStore();
-    const{selectedActivity,editMode}=activityStore;
+  
 
     return(
         <Grid>
@@ -24,14 +38,7 @@ export default observer(function ActivityDashboard()
                 />
             </Grid.Column>
             <Grid.Column width={'6'}>
-                {/*The syntax && makes the code after && execute only if activities[0] isn't null, preventing the app from crashing because the ActivityDetails component loads before
-                the application has access to the activity object, this makes it wait until the object loads */}
-                {selectedActivity && !editMode &&
-                <ActivityDetails                         
-                />}
-                {editMode&&
-                <ActivityForm         
-                />}
+                <h2>Activity filters</h2>
             </Grid.Column>
            
         </Grid>

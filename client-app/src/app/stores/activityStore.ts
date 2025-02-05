@@ -9,7 +9,7 @@ export default class ActivityStore{
     selectedActivity:Activity|undefined=undefined;
     editMode=false;
     loading=false;
-    loadingInitial=true;
+    loadingInitial=false;
     
 
     constructor(){
@@ -28,12 +28,13 @@ export default class ActivityStore{
 
     loadActivities=async()=>{
         try {
+            this.setLoadingInitial(true);
             const activities=await agent.Activities.list();
             /*Since we're using MobX strict mode, changing observable values without using an action isn't allowed, and we're using await, so any steps after it won't be in the same
             tick, so they need to be wrapped in an action, to do this we move the code inside a runInAction arrow function*/  
                 activities.forEach(activity=>{
-                    activity.date=activity.date.split('T')[0];
-                    this.activityRegistry.set(activity.id,activity);
+                    this.setActivity(activity);
+                    
                 })            
            
              this.setLoadingInitial(false);
@@ -43,10 +44,46 @@ export default class ActivityStore{
                 this.setLoadingInitial(false);          
         }
     }
+
+    loadActivity= async(id:string)=>{
+        let activity=this.getActivity(id);
+        if(activity) {
+            this.selectedActivity=activity;
+            return activity;
+        }
+        else{
+            this.setLoadingInitial(true);
+            try {
+                activity=await agent.Activities.details(id);
+                this.setActivity(activity);
+                runInAction(()=>this.selectedActivity=activity);             
+                this.setLoadingInitial(false);
+                return activity;
+                
+            } catch (error) {
+                console.log(error);
+                this.setLoadingInitial(false);
+                
+            }
+        }
+
+    }
+
+    private getActivity=(id:string)=>{
+        return this.activityRegistry.get(id);
+    }
+
+    private setActivity=(activity:Activity)=>{
+        //console.log(activity.date);//Debugging the date issue
+        activity.date=activity.date.split('T')[0];
+        this.activityRegistry.set(activity.id,activity);
+
+    }
+
     setLoadingInitial=(state:boolean)=>{
         this.loadingInitial=state;
     }
-
+    /*These 4 methods aren't needed anymore since routing takes care of those actions
     selectActivity=(id:string)=>{
         this.selectedActivity=this.activityRegistry.get(id);
     }
@@ -63,7 +100,7 @@ export default class ActivityStore{
 
     closeForm=()=>{
         this.editMode=false;
-    }
+    }*/
 
     createActivity=async(activity:Activity)=>{
         this.loading=true;
@@ -115,7 +152,6 @@ export default class ActivityStore{
             runInAction(()=>{
                 console.log(`Deletings of ${id}`);
                 this.activityRegistry.delete(id);
-                if(this.selectedActivity?.id===id) this.cancelSelectedActivity();
                 this.loading=false;
         })
             
