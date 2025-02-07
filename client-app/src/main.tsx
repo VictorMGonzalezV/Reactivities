@@ -5,6 +5,7 @@ import './app/layout/styles.css'
 import {RouterProvider} from 'react-router-dom'
 import {store, StoreContext} from './app/stores/store'
 import { router } from './app/router/Routes.tsx'
+import 'react-calendar/dist/Calendar.css'
 
 
 createRoot(document.getElementById('root')!).render(
