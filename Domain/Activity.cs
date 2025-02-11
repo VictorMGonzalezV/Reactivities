@@ -1,3 +1,4 @@
+
 namespace Domain
 {
     public class Activity
@@ -5,6 +6,7 @@ namespace Domain
         //This property names are required by EF
         public Guid Id { get; set; }
         //Properties must be public and contain a getter and a setter for EF to work
+
         public string Title { get; set; }
 
         public DateTime Date{ get; set; }

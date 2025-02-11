@@ -1,18 +1,61 @@
-import axios, { AxiosResponse } from 'axios';
+import axios, { AxiosError, AxiosResponse } from 'axios';
 import { Activity } from '../models/activity';
+import { toast } from 'react-toastify';
+import { router } from '../router/Routes';
+import { store } from '../stores/store';
 
 axios.defaults.baseURL='http://localhost:5000/api';
 
 axios.interceptors.response.use(async response=>{
-   try{
+   
         await sleep(1000);
         return response;
-   }catch (error){
-        console.log(error);
-        return await Promise.reject(error);
 
-   }
- })
+   
+ },(error:AxiosError)=>{const{data,status,config}=error.response as AxiosResponse;
+ switch(status){
+    case 400:
+        if(config.method==='get'&&data.errors.hasOwnProperty('id')){
+            router.navigate('/not-found');
+        }
+        //Use this to flatten the errors response, an array of arrays, into a simple array of strings
+        if(data.errors){
+            const modalStateErrors=[];
+            for(const key in data.errors){
+                if(data.errors[key]){
+                    modalStateErrors.push(data.errors[key])
+                }
+            }
+            throw modalStateErrors.flat();
+
+        }else{
+            toast.error(data);
+        }
+        break;
+
+    case 401:
+        toast.error('Unauthorized')
+        break;
+
+    case 403:
+        toast.error('Forbidden')
+        break;
+    
+    case 404:
+        router.navigate('/not-found');
+        break;
+
+    case 500:
+        store.commonStore.setServerError(data);
+        router.navigate('/server-error');
+        
+        break;
+
+ }
+ return Promise.reject(error);
+
+
+})
 
 {/*Adding a generic type here allows the implementation of type safety when getting responses from the requests */}
 const responseBody=<T>(response:AxiosResponse<T>)=>response.data;
