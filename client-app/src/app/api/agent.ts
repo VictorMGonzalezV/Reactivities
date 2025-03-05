@@ -3,6 +3,7 @@ import { Activity } from '../models/activity';
 import { toast } from 'react-toastify';
 import { router } from '../router/Routes';
 import { store } from '../stores/store';
+import { User, UserFormValues } from '../models/user';
 
 axios.defaults.baseURL='http://localhost:5000/api';
 
@@ -57,8 +58,14 @@ axios.interceptors.response.use(async response=>{
 
 })
 
-{/*Adding a generic type here allows the implementation of type safety when getting responses from the requests */}
+/*Adding a generic type here allows the implementation of type safety when getting responses from the requests */
 const responseBody=<T>(response:AxiosResponse<T>)=>response.data;
+
+axios.interceptors.request.use(config=>{
+    const token=store.commonStore.token;
+    if(token&&config.headers) config.headers.Authorization=`Bearer ${token}`;
+    return config;
+})
 
 const sleep=(delay:number)=>{
     return new Promise((resolve)=>{
@@ -68,10 +75,12 @@ const sleep=(delay:number)=>{
 
 const requests={
     get:<T>(url:string)=>axios.get<T>(url).then(responseBody),
-    post:<T>(url:string,body:{})=>axios.post<T>(url).then(responseBody),
-    put:<T>(url:string,body:{})=>axios.put<T>(url).then(responseBody),
+    //We configure the request to accept an optional headers parameter so we can specify the content type and prevent the 415 error
+    post:<T>(url:string,body:{},headers={})=>axios.post<T>(url, body,{headers}).then(responseBody),
+    put:<T>(url:string,body:{},headers={})=>axios.put<T>(url,body,{headers}).then(responseBody),
     del:<T>(url:string)=>axios.delete<T>(url).then(responseBody),
 }
+
 
 const Activities={
     list:()=>requests.get<Activity[]>('/activities'),
@@ -81,8 +90,17 @@ const Activities={
     delete:(id:string)=>axios.delete(`/activities/${id}`)
 }
 
+const Account={
+    current:()=>requests.get<User>('/account'),
+    //We're setting the content type header manually here to solve the 415 unsupported media type error
+    login:(user:UserFormValues)=>requests.post<User>('/account/login',user,{headers:{'Content-Type':'application/json'}}),
+    register:(user:UserFormValues)=>requests.post<User>('/account/register',user)
+}
+
 const agent={
-    Activities
+    Activities,
+    Account
 }
 
 export default agent;
+

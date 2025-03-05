@@ -1,12 +1,13 @@
 using Application.Activities;
 using Domain;
-using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Persistence;
+
+
 
 namespace API.Controllers
 {
+    [AllowAnonymous]
   
     public class ActivitiesController:BaseApiController
     {   /*The constructor is no longer needed since we're getting IMediator from the parent class as the Mediator property
@@ -21,6 +22,7 @@ namespace API.Controllers
         //Passing a cancellation token allows the cancellation of the task in case the user closes the app/Postman or the connection times out etc
         public async Task<ActionResult<List<Activity>>> GetActivities()
         {
+            //Console.WriteLine($"Request received");
             return HandleResult(await Mediator.Send(new List.Query()));
         }
         
@@ -28,6 +30,7 @@ namespace API.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetActivity(Guid id)
         {
+            //Console.WriteLine($"Request received for ID: {id}");
 
             return HandleResult(await Mediator.Send(new Details.Query{Id=id}));
 

@@ -24,7 +24,7 @@ export default observer(function ActivityDashboard()
     
   
   
-    if(activityStore.loadingInitial) return <LoadingComponent content='App is make loadings'/>
+    if(activityStore.loadingInitial) return <LoadingComponent content='Activities is do the loadings'/>
     //A function can only return ONE element, so the header must be inside the div,we can't return both a header and a div
     //To avoid returning an empty div, we enclose everything that will be returned inside empty tags
     /*Remember that the destructuring syntax below is a shorter way of achieving this:
