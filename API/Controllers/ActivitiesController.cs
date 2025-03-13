@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
-    [AllowAnonymous]
+
   
     public class ActivitiesController:BaseApiController
     {   /*The constructor is no longer needed since we're getting IMediator from the parent class as the Mediator property
@@ -20,7 +20,7 @@ namespace API.Controllers
 
         [HttpGet] //api/activities
         //Passing a cancellation token allows the cancellation of the task in case the user closes the app/Postman or the connection times out etc
-        public async Task<ActionResult<List<Activity>>> GetActivities()
+        public async Task<IActionResult> GetActivities()
         {
             //Console.WriteLine($"Request received");
             return HandleResult(await Mediator.Send(new List.Query()));
@@ -45,7 +45,7 @@ namespace API.Controllers
             //This is the MediatR<12 implementation
             //return Ok(await Mediator.Send(new Create.Command{Activity=activity}));
         }
-
+        [Authorize(Policy="IsActivityHost")]
         [HttpPut("{id}")]
         public async Task<IActionResult>EditActivity(Guid id,Activity activity)
         {
@@ -53,12 +53,18 @@ namespace API.Controllers
             return HandleResult(await Mediator.Send(new Edit.Command{Activity=activity}));
            
         }
-
+        //[Authorize(Policy="IsActivityHost")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteActivity(Guid id)
         {
             return HandleResult(await Mediator.Send(new Delete.Command{Id=id}));
             
+        }
+
+        [HttpPost("{id}/attend")]
+        public async Task<IActionResult> Attend(Guid id)
+        {
+            return HandleResult(await Mediator.Send(new UpdateAttendance.Command{Id=id}));
         }
     }
 }

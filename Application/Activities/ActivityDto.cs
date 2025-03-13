@@ -1,9 +1,10 @@
+using Application.Profiles;
 
-namespace Domain
+namespace Application.Activities
 {
-    public class Activity
+    public class ActivityDto
     {
-        //These property names are required by EF
+          //These property names are required by EF
         public Guid Id { get; set; }
         //Properties must be public and contain a getter and a setter for EF to work
 
@@ -18,9 +19,10 @@ namespace Domain
         public string City { get; set; }
 
         public string Venue { get; set; }
+        
+        public string HostUsername {get; set;}
 
         public bool IsCancelled {get; set;}
-
-        public ICollection<ActivityAttendee> Attendees {get;set;}=new List<ActivityAttendee>();
+        public ICollection<Profile> Attendees {get; set;}
     }
 }
