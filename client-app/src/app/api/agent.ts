@@ -110,7 +110,10 @@ const Profiles={
 
     },
     setMainPhoto:(id:string)=>requests.post(`/photos/${id}/setMain`,{}),
-    deletePhoto:(id:string)=>requests.del(`/photos/${id}`)
+    deletePhoto:(id:string)=>requests.del(`/photos/${id}`),
+    //In TypeScript, Partial<T> is a utility type that constructs a new type based on T, but makes all properties optional,
+    //This means users won't have to supply any mandatory property we may not want to be modifiable.
+    updateProfile:(profile:Partial<Profile>)=>requests.put(`/profiles`,profile)
 }
 
 
