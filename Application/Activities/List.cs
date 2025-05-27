@@ -1,10 +1,9 @@
 using Application.Core;
+using Application.Interfaces;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
-using Domain;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Persistence;
 
 
@@ -18,11 +17,13 @@ namespace Application.Activities
         {
             private readonly DataContext _context;
             private readonly IMapper _mapper;
+            private readonly IUserAccessor _userAccessor;
 
-            public Handler(DataContext context, IMapper mapper)
+            public Handler(DataContext context, IMapper mapper, IUserAccessor userAccessor)
             {
-              _mapper = mapper;
-              _context=context;
+                _mapper = mapper;
+                _userAccessor = userAccessor;
+                _context =context;
             
             }
 
@@ -38,7 +39,7 @@ namespace Application.Activities
 
                 //Projecting the Activities into the ActivityDto's is much more efficient
                 var activities=await _context.Activities
-                .ProjectTo<ActivityDto>(_mapper.ConfigurationProvider)
+                .ProjectTo<ActivityDto>(_mapper.ConfigurationProvider,new {currentUsername=_userAccessor.GetUsername()})
                 .ToListAsync(cancellationToken);
 
                 //Using projection removes the need of this final mapping
