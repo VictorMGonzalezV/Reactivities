@@ -1,4 +1,5 @@
 using Application.Activities;
+using Application.Core;
 using Domain;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -20,10 +21,10 @@ namespace API.Controllers
 
         [HttpGet] //api/activities
         //Passing a cancellation token allows the cancellation of the task in case the user closes the app/Postman or the connection times out etc
-        public async Task<IActionResult> GetActivities()
+        public async Task<IActionResult> GetActivities([FromQuery]ActivityParams param)
         {
             //Console.WriteLine($"Request received");
-            return HandleResult(await Mediator.Send(new List.Query()));
+            return HandlePagedResult(await Mediator.Send(new List.Query{Params=param}));
         }
         
         //Seeting the Task return type to IActionResult allows the use of HTTP response codes
